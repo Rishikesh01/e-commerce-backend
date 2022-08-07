@@ -5,6 +5,8 @@ import (
 	"github.com/Rishikesh01/amazon-clone-backend/model"
 )
 
-func UserToUserDto(user model.User) dto.Credentials {
+func UserToUserDto(user model.User) dto.UserDto {
+	var userDto dto.UserDto
 
+	return userDto
 }
