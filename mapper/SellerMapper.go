@@ -6,5 +6,12 @@ import (
 )
 
 func SellerToSellerDto(seller model.Seller) dto.SellerDto {
+	var SellerDto dto.SellerDto
 
+	return SellerDto
+}
+
+func SellerDtoToSeller(seller dto.SellerDto) model.Seller {
+	var sellerModel model.Seller
+	return sellerModel
 }

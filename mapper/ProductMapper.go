@@ -6,5 +6,13 @@ import (
 )
 
 func ProductToProductDto(product model.Product) dto.Product {
+	var productDto dto.Product
 
+	return productDto
+}
+
+func ProductDtoToProduct(product dto.Product) model.Product {
+	var productModel model.Product
+
+	return productModel
 }

@@ -5,6 +5,14 @@ import (
 	"github.com/Rishikesh01/amazon-clone-backend/model"
 )
 
-func OrderHistoryToOrderHistoryDto(model.UserOrderHistory) dto.UserOrderHistory {
+func OrderHistoryToOrderHistoryDto(history model.UserOrderHistory) dto.UserOrderHistory {
+	var userOrderHistory dto.UserOrderHistory
 
+	return userOrderHistory
+}
+
+func OrderHistoryDtoToOrderHistory(history dto.UserOrderHistory) model.UserOrderHistory {
+	var userOrderHistory model.UserOrderHistory
+
+	return userOrderHistory
 }

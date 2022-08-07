@@ -19,7 +19,7 @@ func AddressDtoToAddress(Address dto.AddressDto) model.Address {
 
 func ListOfAddressToListOfAddressDto(Address []model.Address) []dto.AddressDto {
 	var addressDto []dto.AddressDto
-	for address := range Address {
+	for _, address := range Address {
 		addressDto = append(addressDto, AddressToAddressDto(address))
 	}
 	return addressDto
