@@ -13,5 +13,6 @@ func SellerToSellerDto(seller model.Seller) dto.SellerDto {
 
 func SellerDtoToSeller(seller dto.SellerDto) model.Seller {
 	var sellerModel model.Seller
+
 	return sellerModel
 }
