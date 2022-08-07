@@ -18,4 +18,6 @@ func (s *SellerRepository) Save(seller model.Seller) {
 	s.Db.Create(&seller)
 }
 
-func (s *SellerRepository) AddSellersProduct(SellerId uuid.UUID) {}
+func (s *SellerRepository) AddSellersProduct(SellerId uuid.UUID, products []model.Product) {
+
+}

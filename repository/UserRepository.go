@@ -45,10 +45,13 @@ func (u *UserRepository) AddAddress(email string, address dto.AddressDto) {
 
 	err := u.Db.Model(&user).Association("Addressses").Append([]model.Address{deliveryAddress})
 
-	if err.Error != nil {
+	if err != nil {
 		log.Println(err)
 	}
 
+}
+
+func (u *UserRepository) GetUserOrderHistory(Email string) {
 }
 
 func (u *UserRepository) Save(cred *dto.Credentials) error {

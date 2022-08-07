@@ -15,9 +15,9 @@ func NewAddressRepository(Db *gorm.DB) *AddressRepository {
 }
 
 func (address *AddressRepository) UpdateSellersAddress(id uuid.UUID, addr model.Address) {
-
+	address.Db.Model(&model.Address{}).Where("seller_id=?", id.String()).Save(&addr)
 }
 
-func (address *AddressRepository) UpdateUsersAddress(Email string, addr model.Address) {
-
+func (address *AddressRepository) UpdateUsersAddress(id uuid.UUID, userId uuid.UUID, addr model.Address) {
+	address.Db.Model(&model.Address{}).Where("id=? AND user_id=?", id.String(), userId.String()).Save(addr)
 }
