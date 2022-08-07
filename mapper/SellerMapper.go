@@ -16,3 +16,13 @@ func SellerDtoToSeller(seller dto.SellerDto) model.Seller {
 
 	return sellerModel
 }
+
+func ListOfSellerDtoToSeller(seller []dto.SellerDto) []model.Seller {
+	var sellerModels []model.Seller
+
+	for _, sellerDto := range seller {
+		sellerModels = append(sellerModels, SellerDtoToSeller(sellerDto))
+	}
+
+	return sellerModels
+}
