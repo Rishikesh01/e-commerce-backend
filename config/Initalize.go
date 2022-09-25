@@ -29,10 +29,13 @@ func start(router *gin.Engine) {
 
 	router.POST("/login", authController.Login)
 	router.POST("/register", reg.Signup)
+
 	groups := router.Group("/").Use(authController.Validate)
 	groups.GET("/order/order-history")
 	groups.GET("/product-data")
 	groups.POST("/order/order-placed")
+
+	
 	err := router.Run()
 	if err != nil {
 		log.Println(err)

@@ -9,5 +9,6 @@ type User struct {
 	Name            string
 	Email           string `gorm:"unique"`
 	Password        string
-	DeliveryAddress []Address `gorm:"foreignKey:UserId"`
+	DeliveryAddress []Address          `gorm:"foreignKey:UserId"`
+	Orders          []UserOrderHistory `gorm:"foreignKey:UserId"`
 }

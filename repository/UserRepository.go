@@ -52,6 +52,8 @@ func (u *UserRepository) AddAddress(email string, address dto.AddressDto) {
 }
 
 func (u *UserRepository) GetUserOrderHistory(Email string) {
+	var users model.User
+	 u.Db.Model(&model.User{}).Where("email=?").Association("Orders").Find(&users)
 }
 
 func (u *UserRepository) Save(cred *dto.Credentials) error {

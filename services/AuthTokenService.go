@@ -1,7 +1,7 @@
 package services
 
 import (
-	"fmt"
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -50,8 +50,10 @@ func (service *AuthService) GenerateToken(email string, isUser bool) (string, er
 
 func (service *AuthService) ValidateToken(encodedToken string) (*jwt.Token, error) {
 	return jwt.Parse(encodedToken, func(token *jwt.Token) (interface{}, error) {
+		var err error
 		if _, isvalid := token.Method.(*jwt.SigningMethodHMAC); !isvalid {
-			return nil, fmt.Errorf("Invalid token", token.Header["alg"])
+			err = errors.New("Invalid token"+token.Header["alg"].(string))
+			return nil, err
 
 		}
 		return []byte(service.secretKey), nil
