@@ -16,8 +16,8 @@ type AuthService interface {
 	ValidateToken(token string) error
 }
 
-func NewAuthService() AuthService {
-	return &jwtAuthService{}
+func NewAuthService(userRepo repository.UserRepo) AuthService {
+	return &jwtAuthService{userRepo: userRepo}
 }
 
 type customJWTToken struct {

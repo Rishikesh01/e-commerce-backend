@@ -8,22 +8,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Authication interface {
-	Login(ctx *gin.Context)
-	Validate(ctx *gin.Context)
-}
 type JWTAuthController struct {
-	LoginService *services.LoginServices
-	Auth         services.AuthService
+	auth services.AuthService
 }
 
-func NewJWTAuthController(service *services.LoginServices, auth *services.AuthService) *JWTAuthController {
-	return &JWTAuthController{LoginService: service, Auth: *auth}
+func NewJWTAuthController(auth services.AuthService) *JWTAuthController {
+	return &JWTAuthController{auth: auth}
 }
 
 /*
-	method used for user Authentication
-	endpoint '/login'
+method used for user Authentication
+endpoint '/login'
 */
 func (jwt *JWTAuthController) Login(ctx *gin.Context) {
 	var cred dto.Credentials
@@ -33,22 +28,12 @@ func (jwt *JWTAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	if ok, token := jwt.LoginService.Login(&cred); ok {
+	if token, err := jwt.auth.AuthUser(cred); err != nil {
+		ctx.Status(http.StatusUnauthorized)
+
+	} else {
 		ctx.JSON(http.StatusOK, gin.H{"token:": token})
 		return
 	}
 
-	ctx.AbortWithStatus(http.StatusUnauthorized)
-}
-
-// method used to validate incoming request
-func (jwt *JWTAuthController) Validate(ctx *gin.Context) {
-	token := ctx.GetHeader("Authorization")[7:]
-
-	if _, err := jwt.Auth.ValidateToken(token); err != nil {
-		ctx.JSON(http.StatusUnauthorized, err)
-		return
-	}
-
-	ctx.Status(http.StatusOK)
 }
