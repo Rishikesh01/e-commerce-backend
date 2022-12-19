@@ -26,5 +26,18 @@ func (r *RegistrationController) Signup(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(400, err)
 	}
-	ctx.JSON(200, "success")
+	ctx.Status(200)
+}
+
+func (r *RegistrationController) SellerSignup(ctx *gin.Context) {
+	var cred dto.SellerSignup
+	if err := ctx.ShouldBindJSON(&cred); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+	err := r.service.RegisterSeller(cred)
+	if err != nil {
+		ctx.JSON(400, err)
+	}
+	ctx.Status(200)
 }

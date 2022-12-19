@@ -88,3 +88,18 @@ func (j *jwtAuthService) ValidateToken(token string) error {
 	}
 	return nil
 }
+
+func GetClaims(token string) (uuid.UUID, string, error) {
+	t, err := jwt.ParseWithClaims(
+		token,
+		&customJWTToken{},
+		func(token *jwt.Token) (interface{}, error) {
+			return "demo", nil
+		},
+	)
+	if err != nil {
+		return uuid.UUID{}, "", nil
+	}
+	claims, _ := t.Claims.(*customJWTToken)
+	return claims.ID, claims.Email, nil
+}

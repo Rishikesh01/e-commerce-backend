@@ -20,7 +20,12 @@ func Init() *gorm.DB {
 	if err != nil {
 		log.Println("error:", err)
 	}
-	if err = _db.AutoMigrate(&model.User{}, &model.Seller{}, &model.Product{}, &model.Billing{}, &model.UserOrderHistory{}); err != nil {
+	if err = _db.AutoMigrate(&model.User{},
+		&model.Seller{},
+		&model.Product{},
+		&model.Billing{},
+		&model.UserOrderHistory{},
+		&model.ProductSeller{}); err != nil {
 		log.Println("error:", err)
 	}
 	return _db

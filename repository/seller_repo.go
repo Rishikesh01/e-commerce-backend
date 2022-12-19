@@ -34,7 +34,7 @@ func (s *sellerRepo) FindByEmail(email string) (*model.Seller, error) {
 
 func (s *sellerRepo) FindByID(id uuid.UUID) (*model.Seller, error) {
 	var seller model.Seller
-	if err := s.db.Where("id=?", id).First(seller).Error; err != nil {
+	if err := s.db.Where("id=?", id).First(&seller).Error; err != nil {
 		return nil, err
 	}
 	return &seller, nil
