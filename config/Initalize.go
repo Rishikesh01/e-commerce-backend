@@ -26,7 +26,7 @@ func start(router *gin.Engine) {
 	productRepo := repository.NewProductRepo(db)
 
 	userService := services.NewUserService(userRepo, sellerRepo)
-	authService := services.NewAuthService(userRepo)
+	authService := services.NewAuthService(userRepo, sellerRepo)
 	productService := services.NewProductService(productRepo, sellerRepo, productSellerRepo)
 	billingService := services.NewBillingService(billingRepo)
 
@@ -35,13 +35,16 @@ func start(router *gin.Engine) {
 	prodController := controller.NewProductController(productService)
 	billingController := controller.NewBillingController(billingService)
 
+	router.POST("/seller/login", authController.SellerLogin)
 	router.POST("/register", registrationController.Signup)
+	router.POST("/seller/register", registrationController.SellerSignup)
 	router.POST("/login", authController.Login)
 	router.GET("/search", prodController.SearchForProduct)
 
+	sellerGroup := router.Group("/s/seller").Use(sellerAuthMiddleWare(authService))
+	sellerGroup.POST("/add/product", prodController.AddNewProduct)
 	sGroup := router.Group("/s/user")
 	sGroup.Use(authMiddle(authService))
-	sGroup.POST("/product", prodController.AddNewProduct)
 	sGroup.POST("/user/bill", billingController.CreateBill)
 
 	//TODO
@@ -55,12 +58,25 @@ func start(router *gin.Engine) {
 	}
 }
 
+func sellerAuthMiddleWare(service services.AuthService) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		const BEARER_SCHEMA = "Bearer"
+		authHeader := ctx.GetHeader("Authorization")
+		tokenString := authHeader[len(BEARER_SCHEMA):]
+		err := service.ValidateToken(tokenString, "seller")
+		if err != nil {
+			ctx.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		ctx.Next()
+	}
+}
 func authMiddle(service services.AuthService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		const BEARER_SCHEMA = "Bearer"
 		authHeader := ctx.GetHeader("Authorization")
 		tokenString := authHeader[len(BEARER_SCHEMA):]
-		err := service.ValidateToken(tokenString)
+		err := service.ValidateToken(tokenString, "user")
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return

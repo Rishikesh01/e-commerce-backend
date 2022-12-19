@@ -8,36 +8,63 @@ import (
 	"github.com/Rishikesh01/amazon-clone-backend/util"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
+	"log"
 	"time"
 )
 
 type AuthService interface {
-	AuthUser(credentials dto.Credentials) (string, error)
-	ValidateToken(token string) error
+	AuthUser(credentials dto.Credentials, userType string) (string, error)
+	ValidateToken(token string, tokenType string) error
 }
 
-func NewAuthService(userRepo repository.UserRepo) AuthService {
-	return &jwtAuthService{userRepo: userRepo}
+func NewAuthService(userRepo repository.UserRepo, sellerRepo repository.SellerRepo) AuthService {
+	return &jwtAuthService{userRepo: userRepo, sellerRepo: sellerRepo}
 }
 
-type customJWTToken struct {
+type customSellerJWT struct {
+	ID           uuid.UUID `json:"id"`
+	Email        string    `json:"email"`
+	BusinessName string    `json:"business_name"`
+	IsPrime      bool      `json:"is_prime"`
+	jwt.RegisteredClaims
+}
+
+type customUserJWT struct {
 	ID    uuid.UUID `json:"id"`
 	Email string    `json:"email"`
 	jwt.RegisteredClaims
 }
 
 type jwtAuthService struct {
-	userRepo repository.UserRepo
+	userRepo   repository.UserRepo
+	sellerRepo repository.SellerRepo
 }
 
-func (j *jwtAuthService) AuthUser(credentials dto.Credentials) (string, error) {
-	user, err := j.loadUser(credentials.Email)
+func (j *jwtAuthService) AuthUser(credentials dto.Credentials, userType string) (string, error) {
+	if userType == "user" {
+		user, err := j.loadUser(credentials.Email)
+		if err != nil {
+			return "", nil
+		}
+		utility := util.BcryptUtil{}
+		if utility.CheckPasswordHash(credentials.Password, user.Password) {
+			token, err := j.createUserToken(credentials.Email, user.Id)
+			if err != nil {
+				return "", err
+			}
+			return token, err
+		}
+
+		return "", errors.New("wrong username/password")
+	}
+
+	user, err := j.loadSeller(credentials.Email)
 	if err != nil {
 		return "", nil
 	}
 	utility := util.BcryptUtil{}
 	if utility.CheckPasswordHash(credentials.Password, user.Password) {
-		token, err := j.createToken(credentials.Email, user.Id)
+		token, err := j.createSellerToken(credentials.Email, user.BusinessName, user.ID)
 		if err != nil {
 			return "", err
 		}
@@ -56,20 +83,90 @@ func (j *jwtAuthService) loadUser(email string) (*model.User, error) {
 	return user, err
 }
 
-func (j *jwtAuthService) createToken(email string, id uuid.UUID) (string, error) {
-	claim := customJWTToken{
-		ID:    id,
-		Email: email,
+func (j *jwtAuthService) loadSeller(email string) (*model.Seller, error) {
+	user, err := j.sellerRepo.FindByEmail(email)
+	if err != nil {
+		return nil, err
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claim)
-	signedToken, err := token.SignedString("demo")
-	return signedToken, err
+	return user, err
+}
+func (j *jwtAuthService) createUserToken(email string, id uuid.UUID) (string, error) {
+	claim := customUserJWT{
+		id,
+		email,
+		jwt.RegisteredClaims{
+			// A usual scenario is to set the expiration time relative to the current time
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+			Issuer:    "e-commerce",
+			Subject:   "user:" + email,
+			ID:        id.String(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claim)
+
+	signedToken, err := token.SignedString([]byte("demo"))
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+	return signedToken, nil
 }
 
-func (j *jwtAuthService) ValidateToken(token string) error {
+func (j *jwtAuthService) createSellerToken(email string, businessName string, id uuid.UUID) (string, error) {
+	claim := customSellerJWT{
+		id,
+		email,
+		businessName,
+		true,
+		jwt.RegisteredClaims{
+			// A usual scenario is to set the expiration time relative to the current time
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+			Issuer:    "e-commerce",
+			Subject:   "seller:" + email,
+			ID:        id.String(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claim)
+
+	signedToken, err := token.SignedString([]byte("demo"))
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+	return signedToken, nil
+}
+
+func (j *jwtAuthService) ValidateToken(token string, tokenType string) error {
+	if tokenType == "user" {
+		t, err := jwt.ParseWithClaims(
+			token,
+			&customUserJWT{},
+			func(token *jwt.Token) (interface{}, error) {
+				return "demo", nil
+			},
+		)
+		if err != nil {
+			return nil
+		}
+		claims, ok := t.Claims.(*customUserJWT)
+		if !ok {
+			err = errors.New("couldn't parse claims")
+			return err
+		}
+		if claims.ExpiresAt.Unix() < time.Now().Local().Unix() {
+			err = errors.New("token expired")
+			return err
+		}
+		return nil
+	}
+
 	t, err := jwt.ParseWithClaims(
 		token,
-		&customJWTToken{},
+		&customSellerJWT{},
 		func(token *jwt.Token) (interface{}, error) {
 			return "demo", nil
 		},
@@ -77,7 +174,7 @@ func (j *jwtAuthService) ValidateToken(token string) error {
 	if err != nil {
 		return nil
 	}
-	claims, ok := t.Claims.(*customJWTToken)
+	claims, ok := t.Claims.(*customSellerJWT)
 	if !ok {
 		err = errors.New("couldn't parse claims")
 		return err
@@ -87,12 +184,13 @@ func (j *jwtAuthService) ValidateToken(token string) error {
 		return err
 	}
 	return nil
+
 }
 
 func GetClaims(token string) (uuid.UUID, string, error) {
 	t, err := jwt.ParseWithClaims(
 		token,
-		&customJWTToken{},
+		&customUserJWT{},
 		func(token *jwt.Token) (interface{}, error) {
 			return "demo", nil
 		},
@@ -100,6 +198,22 @@ func GetClaims(token string) (uuid.UUID, string, error) {
 	if err != nil {
 		return uuid.UUID{}, "", nil
 	}
-	claims, _ := t.Claims.(*customJWTToken)
+	claims, _ := t.Claims.(*customUserJWT)
 	return claims.ID, claims.Email, nil
+}
+
+func GetSellerClaims(token string) (uuid.UUID, string, string, error) {
+	t, err := jwt.ParseWithClaims(
+		token,
+		&customSellerJWT{},
+		func(token *jwt.Token) (interface{}, error) {
+			return "demo", nil
+		},
+	)
+	if err != nil {
+		return uuid.UUID{}, "", "", nil
+	}
+	claims, _ := t.Claims.(*customSellerJWT)
+	return claims.ID, claims.Email, claims.BusinessName, nil
+
 }

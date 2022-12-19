@@ -9,11 +9,11 @@ import (
 )
 
 type JWTAuthController struct {
-	auth services.AuthService
+	userAuth services.AuthService
 }
 
 func NewJWTAuthController(auth services.AuthService) *JWTAuthController {
-	return &JWTAuthController{auth: auth}
+	return &JWTAuthController{userAuth: auth}
 }
 
 /*
@@ -28,7 +28,7 @@ func (jwt *JWTAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	if token, err := jwt.auth.AuthUser(cred); err != nil {
+	if token, err := jwt.userAuth.AuthUser(cred, "user"); err != nil {
 		ctx.Status(http.StatusUnauthorized)
 
 	} else {
@@ -36,4 +36,21 @@ func (jwt *JWTAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
+}
+
+func (jwt *JWTAuthController) SellerLogin(ctx *gin.Context) {
+	var cred dto.Credentials
+
+	if err := ctx.ShouldBindJSON(&cred); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		return
+	}
+
+	if token, err := jwt.userAuth.AuthUser(cred, "seller"); err != nil {
+		ctx.Status(http.StatusUnauthorized)
+
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{"token:": token})
+		return
+	}
 }
