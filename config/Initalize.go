@@ -48,7 +48,7 @@ func start(router *gin.Engine) {
 	sGroup.POST("/user/bill", billingController.CreateBill)
 
 	//TODO
-	// ADD user rating
+	// ADD rating support
 	// Add comment support
 	// Add Image support
 
@@ -62,7 +62,7 @@ func sellerAuthMiddleWare(service services.AuthService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		const BEARER_SCHEMA = "Bearer"
 		authHeader := ctx.GetHeader("Authorization")
-		tokenString := authHeader[len(BEARER_SCHEMA):]
+		tokenString := authHeader[len(BEARER_SCHEMA)+1:]
 		err := service.ValidateToken(tokenString, "seller")
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
@@ -75,7 +75,7 @@ func authMiddle(service services.AuthService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		const BEARER_SCHEMA = "Bearer"
 		authHeader := ctx.GetHeader("Authorization")
-		tokenString := authHeader[len(BEARER_SCHEMA):]
+		tokenString := authHeader[len(BEARER_SCHEMA)+1:]
 		err := service.ValidateToken(tokenString, "user")
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusUnauthorized)

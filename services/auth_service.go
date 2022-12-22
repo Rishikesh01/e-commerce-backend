@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+var privateKey = []byte("demo")
+
 type AuthService interface {
 	AuthUser(credentials dto.Credentials, userType string) (string, error)
 	ValidateToken(token string, tokenType string) error
@@ -146,11 +148,11 @@ func (j *jwtAuthService) ValidateToken(token string, tokenType string) error {
 			token,
 			&customUserJWT{},
 			func(token *jwt.Token) (interface{}, error) {
-				return "demo", nil
+				return privateKey, nil
 			},
 		)
 		if err != nil {
-			return nil
+			return err
 		}
 		claims, ok := t.Claims.(*customUserJWT)
 		if !ok {
@@ -168,11 +170,11 @@ func (j *jwtAuthService) ValidateToken(token string, tokenType string) error {
 		token,
 		&customSellerJWT{},
 		func(token *jwt.Token) (interface{}, error) {
-			return "demo", nil
+			return privateKey, nil
 		},
 	)
 	if err != nil {
-		return nil
+		return err
 	}
 	claims, ok := t.Claims.(*customSellerJWT)
 	if !ok {
@@ -192,7 +194,7 @@ func GetClaims(token string) (uuid.UUID, string, error) {
 		token,
 		&customUserJWT{},
 		func(token *jwt.Token) (interface{}, error) {
-			return "demo", nil
+			return privateKey, nil
 		},
 	)
 	if err != nil {
@@ -207,7 +209,7 @@ func GetSellerClaims(token string) (uuid.UUID, string, string, error) {
 		token,
 		&customSellerJWT{},
 		func(token *jwt.Token) (interface{}, error) {
-			return "demo", nil
+			return privateKey, nil
 		},
 	)
 	if err != nil {

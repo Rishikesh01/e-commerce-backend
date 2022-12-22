@@ -31,7 +31,6 @@ func (p *productService) AddNewProduct(product dto.Product, sellerID uuid.UUID) 
 		return err
 	}
 	mProduct := &model.Product{
-		ID:            product.ID,
 		Name:          product.Name,
 		Description:   product.Description,
 		ProductSeller: []model.ProductSeller{}}

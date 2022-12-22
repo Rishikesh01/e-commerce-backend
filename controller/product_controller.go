@@ -52,10 +52,14 @@ func (p *ProductController) AddNewProduct(ctx *gin.Context) {
 	}
 	const BEARER_SCHEMA = "Bearer"
 	authHeader := ctx.GetHeader("Authorization")
-	tokenString := authHeader[len(BEARER_SCHEMA):]
+	tokenString := authHeader[len(BEARER_SCHEMA)+1:]
 	id, _, _, err := services.GetSellerClaims(tokenString)
 	if err != nil {
 		ctx.JSON(500, err)
+		return
+	}
+	if err != nil {
+		ctx.JSON(500, id)
 		return
 	}
 	err = p.productService.AddNewProduct(prod, id)
