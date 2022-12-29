@@ -35,19 +35,34 @@ func start(router *gin.Engine) {
 	prodController := controller.NewProductController(productService)
 	billingController := controller.NewBillingController(billingService)
 
-	router.POST("/seller/login", authController.SellerLogin)
-	router.POST("/register", registrationController.Signup)
-	router.POST("/seller/register", registrationController.SellerSignup)
-	router.POST("/login", authController.Login)
-	router.GET("/search", prodController.SearchForProduct)
-
+	//Groups
+	sGroup := router.Group("/s/user").Use(authMiddle(authService))
 	sellerGroup := router.Group("/s/seller").Use(sellerAuthMiddleWare(authService))
-	sellerGroup.POST("/add/product", prodController.AddNewProduct)
-	sGroup := router.Group("/s/user")
-	sGroup.Use(authMiddle(authService))
+
+	//seller login
+	router.POST("/seller/login", authController.SellerLogin)
+	//user signup endpoint
+	router.POST("/register", registrationController.Signup)
+	//seller signup endpoint
+	router.POST("/seller/register", registrationController.SellerSignup)
+	//user login endpoint
+	router.POST("/login", authController.Login)
+	//search endpoint
+	router.GET("/search", prodController.SearchForProduct)
+	//add New Product Endpoint
+	sellerGroup.POST("/seller/add/new/product", prodController.AddNewProduct)
+	//billing endpoint
 	sGroup.POST("/user/bill", billingController.CreateBill)
 
+	//WIP
+	router.GET("/home")
+	router.GET("/seller/product/rating")
+	router.GET("/seller/product/comments")
+	sGroup.POST("/give/rating")
+	sGroup.POST("/give/comment")
+
 	//TODO
+	// Add endpoints to show random products in home screen
 	// ADD rating support
 	// Add comment support
 	// Add Image support
