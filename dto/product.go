@@ -13,7 +13,8 @@ type ProductSearch struct {
 }
 
 type Product struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Price       uint64 `json:"price"`
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Price       uint64    `json:"price"`
 }

@@ -50,14 +50,14 @@ func start(router *gin.Engine) {
 	//search endpoint
 	router.GET("/search", prodController.SearchForProduct)
 	//add New Product Endpoint
-	sellerGroup.POST("/seller/add/new/product", prodController.AddNewProduct)
+	sellerGroup.POST("/seller/product/image", prodController.AddNewProductPicture)
+	sellerGroup.POST("/seller/product", prodController.AddNewProduct)
 	//billing endpoint
 	sGroup.POST("/user/bill", billingController.CreateBill)
 
 	//WIP
 	router.GET("/home")
 	router.GET("/seller/product/rating")
-	router.GET("/seller/product/comments")
 	sGroup.POST("/give/rating")
 	sGroup.POST("/give/comment")
 

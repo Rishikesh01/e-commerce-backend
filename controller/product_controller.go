@@ -1,11 +1,14 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/Rishikesh01/amazon-clone-backend/dto"
 	"github.com/Rishikesh01/amazon-clone-backend/services"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"net/http"
+	"os"
 )
 
 type ProductController struct {
@@ -43,11 +46,21 @@ func (p *ProductController) SearchForProduct(ctx *gin.Context) {
 	ctx.JSON(200, products)
 }
 
-// adds product
-func (p *ProductController) AddNewProduct(ctx *gin.Context) {
-	var prod dto.Product
-	if err := ctx.ShouldBindJSON(&prod); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+func (p *ProductController) AddNewProductPicture(ctx *gin.Context) {
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.JSON(400, err)
+		return
+	}
+
+	dir, err := os.UserHomeDir()
+	if err != nil {
+		return
+	}
+	fileName := dir + "images" + file.Filename + uuid.New().String() + ".jpg"
+	err = ctx.SaveUploadedFile(file, fileName)
+	if err != nil {
+		ctx.JSON(500, err)
 		return
 	}
 	const BEARER_SCHEMA = "Bearer"
@@ -58,11 +71,19 @@ func (p *ProductController) AddNewProduct(ctx *gin.Context) {
 		ctx.JSON(500, err)
 		return
 	}
-	if err != nil {
-		ctx.JSON(500, id)
+	ID, err := p.productService.AddNewProductImage(fileName, id)
+
+	ctx.JSON(http.StatusOK, fmt.Sprintf("ID:%s", ID.String()))
+}
+
+// adds product
+func (p *ProductController) AddNewProduct(ctx *gin.Context) {
+	var prod dto.Product
+	if err := ctx.ShouldBindJSON(&prod); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 		return
 	}
-	err = p.productService.AddNewProduct(prod, id)
+	err := p.productService.AddNewProduct(prod)
 	if err != nil {
 		ctx.JSON(400, err)
 		return

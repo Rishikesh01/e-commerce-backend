@@ -5,11 +5,11 @@ import (
 	"github.com/Rishikesh01/amazon-clone-backend/model"
 	"github.com/Rishikesh01/amazon-clone-backend/repository"
 	"github.com/google/uuid"
-	"log"
 )
 
 type ProductService interface {
-	AddNewProduct(product dto.Product, sellerID uuid.UUID) error
+	AddNewProduct(product dto.Product) error
+	AddNewProductImage(ImagePath string, sellerID uuid.UUID) (uuid.UUID, error)
 	Search(name string) ([]model.Product, error)
 	Update(product model.Product) error
 }
@@ -24,20 +24,25 @@ func NewProductService(productRepo repository.ProductRepo, sellerRepo repository
 	return &productService{productRepo: productRepo, sellerRepo: sellerRepo, productSellerRepo: productSellerRepo}
 }
 
-func (p *productService) AddNewProduct(product dto.Product, sellerID uuid.UUID) error {
-	_, err := p.sellerRepo.FindByID(sellerID)
-	if err != nil {
-		log.Println(err)
-		return err
+func (p *productService) AddNewProductImage(ImagePath string, sellerID uuid.UUID) (uuid.UUID, error) {
+	mProduct := &model.Product{PicturePath: ImagePath}
+	mProduct.ProductSeller = append(mProduct.ProductSeller, model.ProductSeller{SellerID: sellerID})
+
+	if err := p.productRepo.Save(mProduct); err != nil {
+		return uuid.UUID{}, err
 	}
+
+	return mProduct.ID, nil
+}
+
+func (p *productService) AddNewProduct(product dto.Product) error {
 	mProduct := &model.Product{
+		ID:            product.ID,
 		Name:          product.Name,
 		Description:   product.Description,
 		ProductSeller: []model.ProductSeller{}}
-
-	mProduct.ProductSeller = append(mProduct.ProductSeller, model.ProductSeller{SellerID: sellerID, Price: product.Price})
-
-	err = p.productRepo.Save(mProduct)
+	mProduct.HasBasicInfo = true
+	err := p.productRepo.Save(mProduct)
 	if err != nil {
 		return err
 	}
