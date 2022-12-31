@@ -18,3 +18,15 @@ type Product struct {
 	Description string    `json:"description"`
 	Price       uint64    `json:"price"`
 }
+
+type ProductRatingByUser struct {
+	ID     uuid.UUID `json:"id"`
+	Rating int       `json:"rating"`
+	UserID uuid.UUID `json:"-"`
+}
+
+type ProductReview struct {
+	ID     uuid.UUID `json:"id"`
+	Review string    `json:"review"`
+	UserID uuid.UUID `json:"-"`
+}

@@ -9,11 +9,12 @@ import (
 )
 
 type RegistrationController struct {
-	service services.UserService
+	service       services.UserService
+	sellerService services.SellerService
 }
 
-func NewRegistartionController(service services.UserService) *RegistrationController {
-	return &RegistrationController{service: service}
+func NewRegistartionController(service services.UserService, sellerService services.SellerService) *RegistrationController {
+	return &RegistrationController{service: service, sellerService: sellerService}
 }
 
 func (r *RegistrationController) Signup(ctx *gin.Context) {
@@ -35,7 +36,7 @@ func (r *RegistrationController) SellerSignup(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
-	err := r.service.RegisterSeller(cred)
+	err := r.sellerService.RegisterSeller(cred)
 	if err != nil {
 		ctx.JSON(400, err)
 	}

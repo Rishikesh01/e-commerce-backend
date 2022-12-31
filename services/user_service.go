@@ -10,16 +10,19 @@ import (
 
 type UserService interface {
 	Register(registration dto.Registration) error
-	RegisterSeller(registration dto.SellerSignup) error
+	RateProduct(rating dto.ProductRatingByUser) error
+	GiveProductReview(review dto.ProductReview) error
 }
 
 type userService struct {
-	userRepo   repository.UserRepo
-	sellerRepo repository.SellerRepo
+	productRatingRepo repository.ProductRatingRepo
+	productReviewRepo repository.ProductReviewRepo
+	trackRatingRepo   repository.TrackProductRatingRepo
+	userRepo          repository.UserRepo
 }
 
-func NewUserService(userRepo repository.UserRepo, sellerRepo repository.SellerRepo) UserService {
-	return &userService{userRepo: userRepo, sellerRepo: sellerRepo}
+func NewUserService(userRepo repository.UserRepo, productRatingRepo repository.ProductRatingRepo, productReviewRepo repository.ProductReviewRepo, trackRatingRepo repository.TrackProductRatingRepo) UserService {
+	return &userService{userRepo: userRepo, productReviewRepo: productReviewRepo, productRatingRepo: productRatingRepo, trackRatingRepo: trackRatingRepo}
 }
 
 func (u *userService) Register(registration dto.Registration) error {
@@ -38,17 +41,12 @@ func (u *userService) Register(registration dto.Registration) error {
 	return nil
 }
 
-func (u *userService) RegisterSeller(registration dto.SellerSignup) error {
-	if registration.Password != registration.ConfirmPassword {
-		return errors.New("passwords don't match")
-	}
-	utility := util.BcryptUtil{}
-	password, err := utility.HashPassword(registration.ConfirmPassword)
-	if err != nil {
-		return err
-	}
-	if err := u.sellerRepo.Save(&model.Seller{Name: registration.Name, Email: registration.Email, BusinessName: registration.BusinessName, Password: password}); err != nil {
-		return err
-	}
+func (u *userService) RateProduct(rating dto.ProductRatingByUser) error {
+	panic("implement")
+	return nil
+}
+
+func (u *userService) GiveProductReview(review dto.ProductReview) error {
+	panic("implement")
 	return nil
 }

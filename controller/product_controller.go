@@ -13,11 +13,13 @@ import (
 
 type ProductController struct {
 	productService services.ProductService
+	sellerService  services.SellerService
 }
 
-func NewProductController(service services.ProductService) ProductController {
+func NewProductController(service services.ProductService, sellerService services.SellerService) ProductController {
 	return ProductController{
 		productService: service,
+		sellerService:  sellerService,
 	}
 }
 
@@ -71,7 +73,7 @@ func (p *ProductController) AddNewProductPicture(ctx *gin.Context) {
 		ctx.JSON(500, err)
 		return
 	}
-	ID, err := p.productService.AddNewProductImage(fileName, id)
+	ID, err := p.sellerService.AddNewProductImage(fileName, id)
 
 	ctx.JSON(http.StatusOK, fmt.Sprintf("ID:%s", ID.String()))
 }
@@ -83,7 +85,7 @@ func (p *ProductController) AddNewProduct(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 		return
 	}
-	err := p.productService.AddNewProduct(prod)
+	err := p.sellerService.AddNewProduct(prod)
 	if err != nil {
 		ctx.JSON(400, err)
 		return

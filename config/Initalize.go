@@ -24,15 +24,19 @@ func start(router *gin.Engine) {
 	sellerRepo := repository.NewSellerRepo(db)
 	billingRepo := repository.NewBillingRepo(db)
 	productRepo := repository.NewProductRepo(db)
+	trackRatingRepo := repository.NewTackProductRatingRepo(db)
+	productRatingRepo := repository.NewProductRatingRepo(db)
+	productReviewRepo := repository.NewProductReviewRepo(db)
 
-	userService := services.NewUserService(userRepo, sellerRepo)
+	userService := services.NewUserService(userRepo, productRatingRepo, productReviewRepo, trackRatingRepo)
+	sellerService := services.NewSellerService(productRepo, productSellerRepo, sellerRepo)
 	authService := services.NewAuthService(userRepo, sellerRepo)
 	productService := services.NewProductService(productRepo, sellerRepo, productSellerRepo)
 	billingService := services.NewBillingService(billingRepo)
 
 	authController := controller.NewJWTAuthController(authService)
-	registrationController := controller.NewRegistartionController(userService)
-	prodController := controller.NewProductController(productService)
+	registrationController := controller.NewRegistartionController(userService, sellerService)
+	prodController := controller.NewProductController(productService, sellerService)
 	billingController := controller.NewBillingController(billingService)
 
 	//Groups
