@@ -44,7 +44,7 @@ func (u *userService) Register(registration dto.Registration) error {
 
 func (u *userService) RateProduct(rating dto.ProductRatingByUser) error {
 	trackRating := &model.TrackRating{ProductID: rating.ID, RatingScore: uint(rating.Rating)}
-	trackRating.UserID = append(trackRating.UserID, model.User{Id: rating.UserID})
+	trackRating.UserID = rating.UserID
 	existingModel, err := u.productRatingRepo.FindByID(rating.ID)
 	if err != nil {
 		return err

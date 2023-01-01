@@ -5,6 +5,6 @@ import "github.com/google/uuid"
 type TrackRating struct {
 	ID          uint
 	ProductID   uuid.UUID
-	UserID      []User
+	UserID      uuid.UUID
 	RatingScore uint
 }

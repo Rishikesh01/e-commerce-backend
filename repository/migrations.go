@@ -25,7 +25,11 @@ func Init() *gorm.DB {
 		&model.Product{},
 		&model.Billing{},
 		&model.UserOrderHistory{},
-		&model.ProductSeller{}); err != nil {
+		&model.ProductSeller{},
+		&model.ProductReview{},
+		&model.ProductRating{},
+		&model.TrackRating{},
+	); err != nil {
 		log.Println("error:", err)
 	}
 	return _db
