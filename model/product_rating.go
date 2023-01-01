@@ -1,8 +1,10 @@
 package model
 
+import "github.com/google/uuid"
+
 type ProductRating struct {
 	ID               uint
-	TrackRatingID    TrackRating
-	TotalRatingScore uint
+	ProductID        uuid.UUID
+	TotalRatingScore float32
 	TotalUserRated   uint
 }

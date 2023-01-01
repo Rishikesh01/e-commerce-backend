@@ -6,6 +6,7 @@ import (
 	"github.com/Rishikesh01/amazon-clone-backend/model"
 	"github.com/Rishikesh01/amazon-clone-backend/repository"
 	"github.com/Rishikesh01/amazon-clone-backend/util"
+	"gorm.io/gorm"
 )
 
 type UserService interface {
@@ -42,11 +43,43 @@ func (u *userService) Register(registration dto.Registration) error {
 }
 
 func (u *userService) RateProduct(rating dto.ProductRatingByUser) error {
-	panic("implement")
+	trackRating := &model.TrackRating{ProductID: rating.ID, RatingScore: uint(rating.Rating)}
+	trackRating.UserID = append(trackRating.UserID, model.User{Id: rating.UserID})
+	existingModel, err := u.productRatingRepo.FindByID(rating.ID)
+	if err != nil {
+		return err
+	}
+	existingModel.TotalRatingScore = u.getStarRating(
+		rating.Rating,
+		existingModel.TotalRatingScore,
+		int(existingModel.TotalUserRated),
+	)
+	existingModel.TotalUserRated = existingModel.TotalUserRated + 1
+	err = u.productRatingRepo.SaveWithTrackRating(existingModel, trackRating)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func (u *userService) GiveProductReview(review dto.ProductReview) error {
-	panic("implement")
+	_, err := u.userRepo.FindByID(review.UserID)
+	if err != nil && err.Error() != gorm.ErrRecordNotFound.Error() {
+		return err
+	}
+
+	err = u.productReviewRepo.Save(&model.ProductReview{
+		ProductID: review.ID,
+		UserID:    review.UserID,
+		Review:    review.Review},
+	)
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func (u *userService) getStarRating(newRating int, oldRatingAvg float32, totalRating int) float32 {
+	return ((oldRatingAvg * float32(totalRating)) + float32(newRating) + float32(1)) / (float32(totalRating) + float32(1))
 }
