@@ -16,6 +16,7 @@ type Product struct {
 	ID          uuid.UUID `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
+	Rating      float32   `json:"rating"`
 	Price       uint64    `json:"price"`
 }
 

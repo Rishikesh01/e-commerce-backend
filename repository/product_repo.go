@@ -10,6 +10,7 @@ type ProductRepo interface {
 	Save(product *model.Product) error
 	FindByLikeName(name string) ([]model.Product, error)
 	FindByID(id uuid.UUID) (*model.Product, error)
+	FindAll() ([]model.Product, error)
 }
 
 type productRepo struct {
@@ -22,6 +23,14 @@ func NewProductRepo(db *gorm.DB) ProductRepo {
 
 func (p *productRepo) Save(product *model.Product) error {
 	return p.db.Save(product).Error
+}
+
+func (p *productRepo) FindAll() ([]model.Product, error) {
+	var products []model.Product
+	if err := p.db.Find(&products).Error; err != nil {
+		return nil, err
+	}
+	return products, nil
 }
 
 func (p *productRepo) FindByLikeName(name string) ([]model.Product, error) {

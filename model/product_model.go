@@ -10,6 +10,6 @@ type Product struct {
 	HasBasicInfo  bool
 	ProductSeller []ProductSeller
 	ProductReview ProductReview
-	ProductRating []ProductRating
-	TrackRating   TrackRating
+	ProductRating ProductRating
+	TrackRating   []TrackRating
 }

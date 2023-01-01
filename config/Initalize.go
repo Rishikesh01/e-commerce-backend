@@ -33,11 +33,13 @@ func start(router *gin.Engine) {
 	authService := services.NewAuthService(userRepo, sellerRepo)
 	productService := services.NewProductService(productRepo, sellerRepo, productSellerRepo)
 	billingService := services.NewBillingService(billingRepo)
+	homeService := services.NewHomePageService(productRepo)
 
 	authController := controller.NewJWTAuthController(authService)
 	registrationController := controller.NewRegistartionController(userService, sellerService)
 	prodController := controller.NewProductController(productService, sellerService, userService)
 	billingController := controller.NewBillingController(billingService)
+	homeController := controller.NewHomeController(homeService)
 
 	//Groups
 	sGroup := router.Group("/s/user").Use(authMiddle(authService))
@@ -60,7 +62,7 @@ func start(router *gin.Engine) {
 	sGroup.POST("/user/bill", billingController.CreateBill)
 
 	//WIP
-	router.GET("/home")
+	router.GET("/home", homeController.Home)
 	sGroup.POST("/give/rating", prodController.RateProduct)
 	sGroup.POST("/give/comment", prodController.LeaveComment)
 
