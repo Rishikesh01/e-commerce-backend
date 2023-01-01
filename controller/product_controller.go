@@ -12,14 +12,16 @@ import (
 )
 
 type ProductController struct {
+	userService    services.UserService
 	productService services.ProductService
 	sellerService  services.SellerService
 }
 
-func NewProductController(service services.ProductService, sellerService services.SellerService) ProductController {
+func NewProductController(service services.ProductService, sellerService services.SellerService, userService services.UserService) ProductController {
 	return ProductController{
 		productService: service,
 		sellerService:  sellerService,
+		userService:    userService,
 	}
 }
 
@@ -90,4 +92,52 @@ func (p *ProductController) AddNewProduct(ctx *gin.Context) {
 		ctx.JSON(400, err)
 		return
 	}
+}
+
+func (p *ProductController) RateProduct(ctx *gin.Context) {
+	var rating dto.ProductRatingByUser
+	if err := ctx.ShouldBindJSON(&rating); err != nil {
+		ctx.JSON(400, err)
+		return
+	}
+	const BEARER_SCHEMA = "Bearer"
+	authHeader := ctx.GetHeader("Authorization")
+	tokenString := authHeader[len(BEARER_SCHEMA)+1:]
+	id, _, err := services.GetClaims(tokenString)
+	if err != nil {
+		ctx.JSON(500, err)
+		return
+	}
+	rating.UserID = id
+	err = p.userService.RateProduct(rating)
+	if err != nil {
+		ctx.JSON(400, err)
+		return
+	}
+
+	ctx.Status(200)
+
+}
+
+func (p *ProductController) LeaveComment(ctx *gin.Context) {
+	var review dto.ProductReview
+	if err := ctx.ShouldBindJSON(&review); err != nil {
+		ctx.JSON(400, err)
+		return
+	}
+	const BEARER_SCHEMA = "Bearer"
+	authHeader := ctx.GetHeader("Authorization")
+	tokenString := authHeader[len(BEARER_SCHEMA)+1:]
+	id, _, err := services.GetClaims(tokenString)
+	if err != nil {
+		ctx.JSON(500, err)
+		return
+	}
+	review.UserID = id
+	err = p.userService.GiveProductReview(review)
+	if err != nil {
+		ctx.JSON(400, err)
+		return
+	}
+	ctx.Status(200)
 }

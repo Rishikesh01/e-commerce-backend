@@ -36,7 +36,7 @@ func start(router *gin.Engine) {
 
 	authController := controller.NewJWTAuthController(authService)
 	registrationController := controller.NewRegistartionController(userService, sellerService)
-	prodController := controller.NewProductController(productService, sellerService)
+	prodController := controller.NewProductController(productService, sellerService, userService)
 	billingController := controller.NewBillingController(billingService)
 
 	//Groups
@@ -61,15 +61,11 @@ func start(router *gin.Engine) {
 
 	//WIP
 	router.GET("/home")
-	router.GET("/seller/product/rating")
-	sGroup.POST("/give/rating")
-	sGroup.POST("/give/comment")
+	sGroup.POST("/give/rating", prodController.RateProduct)
+	sGroup.POST("/give/comment", prodController.LeaveComment)
 
 	//TODO
 	// Add endpoints to show random products in home screen
-	// ADD rating support
-	// Add comment support
-	// Add Image support
 
 	err := router.Run()
 	if err != nil {
