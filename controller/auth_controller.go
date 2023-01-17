@@ -32,8 +32,7 @@ func (jwt *JWTAuthController) Login(ctx *gin.Context) {
 		ctx.Status(http.StatusUnauthorized)
 
 	} else {
-		ctx.JSON(http.StatusOK, gin.H{"token:": token})
-		return
+		ctx.JSON(200, gin.H{"token": token})
 	}
 
 }

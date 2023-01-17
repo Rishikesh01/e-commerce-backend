@@ -2,14 +2,15 @@ package services
 
 import (
 	"errors"
+	"log"
+	"time"
+
 	"github.com/Rishikesh01/amazon-clone-backend/dto"
 	"github.com/Rishikesh01/amazon-clone-backend/model"
 	"github.com/Rishikesh01/amazon-clone-backend/repository"
 	"github.com/Rishikesh01/amazon-clone-backend/util"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
-	"log"
-	"time"
 )
 
 var privateKey = []byte("demo")
@@ -46,7 +47,7 @@ func (j *jwtAuthService) AuthUser(credentials dto.Credentials, userType string) 
 	if userType == "user" {
 		user, err := j.loadUser(credentials.Email)
 		if err != nil {
-			return "", nil
+			return "", err
 		}
 		utility := util.BcryptUtil{}
 		if utility.CheckPasswordHash(credentials.Password, user.Password) {

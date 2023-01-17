@@ -4,6 +4,7 @@ import (
 	"github.com/Rishikesh01/amazon-clone-backend/controller"
 	"github.com/Rishikesh01/amazon-clone-backend/repository"
 	"github.com/Rishikesh01/amazon-clone-backend/services"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -13,6 +14,9 @@ type Engine struct{}
 
 func (e *Engine) Run() {
 	router := gin.Default()
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:3000"}
+	router.Use(cors.New(config))
 	start(router)
 }
 
@@ -61,13 +65,9 @@ func start(router *gin.Engine) {
 	//billing endpoint
 	sGroup.POST("/user/bill", billingController.CreateBill)
 
-	//WIP
 	router.GET("/home", homeController.Home)
 	sGroup.POST("/give/rating", prodController.RateProduct)
 	sGroup.POST("/give/comment", prodController.LeaveComment)
-
-	//TODO
-	// Add endpoints to show random products in home screen
 
 	err := router.Run()
 	if err != nil {
