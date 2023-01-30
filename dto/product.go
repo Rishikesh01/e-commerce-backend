@@ -7,6 +7,7 @@ import (
 
 type ProductSearch struct {
 	ID          uuid.UUID             `json:"id"`
+	Img         string                `json:"image"`
 	Name        string                `json:"name"`
 	Description string                `json:"description"`
 	Sellers     []model.ProductSeller `json:"sellers"`
@@ -14,6 +15,7 @@ type ProductSearch struct {
 
 type Product struct {
 	ID          uuid.UUID `json:"id"`
+	Img         string    `json:"image"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Rating      float32   `json:"rating"`

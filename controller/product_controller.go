@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"net/http"
-	"os"
+	"strings"
 )
 
 type ProductController struct {
@@ -32,6 +32,7 @@ func (p *ProductController) SearchForProduct(ctx *gin.Context) {
 	for i := 0; i < len(products); i++ {
 		val := dto.ProductSearch{
 			ID:          products[i].ID,
+			Img:         products[i].PicturePath,
 			Name:        products[i].Name,
 			Description: products[i].Description,
 			Sellers:     products[i].ProductSeller,
@@ -57,11 +58,12 @@ func (p *ProductController) AddNewProductPicture(ctx *gin.Context) {
 		return
 	}
 
-	dir, err := os.UserHomeDir()
+	//dir, err := os.Getwd()
+	//dir, err := os.UserHomeDir()
 	if err != nil {
 		return
 	}
-	fileName := dir + "images" + file.Filename + uuid.New().String() + ".jpg"
+	fileName := "image/" + strings.TrimSuffix(file.Filename, ".") + uuid.New().String() + ".jpg"
 	err = ctx.SaveUploadedFile(file, fileName)
 	if err != nil {
 		ctx.JSON(500, err)
@@ -87,7 +89,15 @@ func (p *ProductController) AddNewProduct(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 		return
 	}
-	err := p.sellerService.AddNewProduct(prod)
+	const BEARER_SCHEMA = "Bearer"
+	authHeader := ctx.GetHeader("Authorization")
+	tokenString := authHeader[len(BEARER_SCHEMA)+1:]
+	id, _, _, err := services.GetSellerClaims(tokenString)
+	if err != nil {
+		ctx.JSON(500, err)
+		return
+	}
+	err = p.sellerService.AddNewProduct(prod, id)
 	if err != nil {
 		ctx.JSON(400, err)
 		return

@@ -4,6 +4,7 @@ import (
 	"github.com/Rishikesh01/amazon-clone-backend/model"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ProductRepo interface {
@@ -22,13 +23,28 @@ func NewProductRepo(db *gorm.DB) ProductRepo {
 }
 
 func (p *productRepo) Save(product *model.Product) error {
-	return p.db.Save(product).Error
+	return p.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Save(product).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Clauses(clause.OnConflict{
+			UpdateAll: true,
+		}).Save(&product.ProductSeller).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func (p *productRepo) FindAll() ([]model.Product, error) {
 	var products []model.Product
-	if err := p.db.Find(&products).Error; err != nil {
+	if err := p.db.Model(&model.Product{}).Preload("ProductSeller").
+		Preload("ProductRating").Find(&products).Error; err != nil {
 		return nil, err
+	}
+	if len(products) == 0 {
+		return nil, gorm.ErrRecordNotFound
 	}
 	return products, nil
 }
@@ -46,7 +62,7 @@ func (p *productRepo) FindByLikeName(name string) ([]model.Product, error) {
 
 func (p *productRepo) FindByID(id uuid.UUID) (*model.Product, error) {
 	var product model.Product
-	if err := p.db.Where("id=?", id).First(product).Error; err != nil {
+	if err := p.db.Model(&model.Product{}).Preload("ProductSeller").Preload("ProductRating").Where("id=?", id).First(&product).Error; err != nil {
 		return nil, err
 	}
 	return &product, nil

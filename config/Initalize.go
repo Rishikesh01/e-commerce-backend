@@ -58,6 +58,7 @@ func start(router *gin.Engine) {
 	//user login endpoint
 	router.POST("/login", authController.Login)
 	//search endpoint
+	router.Static("/image", "./image")
 	router.GET("/search", prodController.SearchForProduct)
 	//add New Product Endpoint
 	sellerGroup.POST("/seller/product/image", prodController.AddNewProductPicture)

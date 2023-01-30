@@ -11,7 +11,7 @@ import (
 
 type SellerService interface {
 	RegisterSeller(registration dto.SellerSignup) error
-	AddNewProduct(product dto.Product) error
+	AddNewProduct(product dto.Product, sellerID uuid.UUID) error
 	AddNewProductImage(ImagePath string, sellerID uuid.UUID) (uuid.UUID, error)
 	UpdateProduct(product model.Product) error
 }
@@ -52,14 +52,21 @@ func (p *sellerService) AddNewProductImage(ImagePath string, sellerID uuid.UUID)
 	return mProduct.ID, nil
 }
 
-func (p *sellerService) AddNewProduct(product dto.Product) error {
-	mProduct := &model.Product{
-		ID:            product.ID,
-		Name:          product.Name,
-		Description:   product.Description,
-		ProductSeller: []model.ProductSeller{}}
-	mProduct.HasBasicInfo = true
-	err := p.productRepo.Save(mProduct)
+func (p *sellerService) AddNewProduct(product dto.Product, sellerID uuid.UUID) error {
+	seller, err := p.productSellerRepo.FindByCompositeID(product.ID, sellerID)
+	mProduct, err := p.productRepo.FindByID(product.ID)
+	if err != nil {
+		return err
+	}
+	mProduct.Name = product.Name
+	mProduct.Description = product.Description
+	mProduct.ProductSeller = []model.ProductSeller{}
+	mProduct.ProductSeller = append(mProduct.ProductSeller, model.ProductSeller{
+		SellerID:  seller.SellerID,
+		ProductID: seller.ProductID,
+		Price:     product.Price,
+	})
+	err = p.productRepo.Save(mProduct)
 	if err != nil {
 		return err
 	}

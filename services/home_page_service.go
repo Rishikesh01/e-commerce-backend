@@ -25,22 +25,37 @@ func (h *homePageService) ShowItems() (dto.HomePage, error) {
 	}
 	page := dto.HomePage{}
 	for i := 0; i < 6; i++ {
-		j := rand.Intn(len(data))
-		page.OtherProducts = append(page.OtherProducts, dto.Product{
-			ID:     data[j].ID,
-			Name:   data[j].Name,
-			Price:  data[j].ProductSeller[0].Price,
-			Rating: data[j].ProductRating.TotalRatingScore,
-		})
 		if i == 3 {
 			k := rand.Intn(len(data))
 			page.MainProduct = dto.Product{
 				ID:     data[k].ID,
 				Name:   data[k].Name,
+				Img:    data[k].PicturePath,
 				Price:  data[k].ProductSeller[0].Price,
 				Rating: data[k].ProductRating.TotalRatingScore,
 			}
+		} else {
+			if i%2 == 0 {
+				j := rand.Intn(len(data))
+				page.SecondRow = append(page.SecondRow, dto.Product{
+					ID:     data[j].ID,
+					Name:   data[j].Name,
+					Img:    data[j].PicturePath,
+					Price:  data[j].ProductSeller[0].Price,
+					Rating: data[j].ProductRating.TotalRatingScore,
+				})
+			} else {
+				j := rand.Intn(len(data))
+				page.FirstRow = append(page.SecondRow, dto.Product{
+					ID:     data[j].ID,
+					Name:   data[j].Name,
+					Img:    data[j].PicturePath,
+					Price:  data[j].ProductSeller[0].Price,
+					Rating: data[j].ProductRating.TotalRatingScore,
+				})
+			}
 		}
+
 	}
 
 	return page, nil
