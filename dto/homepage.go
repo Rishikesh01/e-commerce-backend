@@ -1,7 +1,7 @@
 package dto
 
 type HomePage struct {
-	MainProduct Product   `json:"main"`
-	FirstRow    []Product `json:"first_row"`
-	SecondRow   []Product `json:"second_row"`
+	MainProduct DisplayProduct   `json:"main"`
+	FirstRow    []DisplayProduct `json:"first_row"`
+	SecondRow   []DisplayProduct `json:"second_row"`
 }

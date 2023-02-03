@@ -13,13 +13,45 @@ type ProductSearch struct {
 	Sellers     []model.ProductSeller `json:"sellers"`
 }
 
-type Product struct {
+type DisplayProduct struct {
+	ID       uuid.UUID `json:"id"`
+	Img      string    `json:"image"`
+	SellerID uuid.UUID `json:"seller_id"`
+	Name     string    `json:"name"`
+	Rating   float32   `json:"rating"`
+	Price    uint64    `json:"price"`
+}
+
+type AddProduct struct {
 	ID          uuid.UUID `json:"id"`
-	Img         string    `json:"image"`
+	Img         string    `json:"-"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Rating      float32   `json:"rating"`
 	Price       uint64    `json:"price"`
+}
+
+type AddSellerToProduct struct {
+	ID    uuid.UUID `json:"id"`
+	Price uint64    `json:"price"`
+}
+
+type ProductPage struct {
+	ID          uuid.UUID             `json:"id"`
+	Description string                `json:"description"`
+	Img         string                `json:"image"`
+	Name        string                `json:"name"`
+	Rating      float32               `json:"rating"`
+	Price       uint64                `json:"price"`
+	Sellers     []model.ProductSeller `json:"sellers"`
+}
+
+type Product struct {
+	ID     uuid.UUID `json:"id"`
+	Img    string    `json:"image"`
+	Name   string    `json:"name"`
+	Rating float32   `json:"rating"`
+	Price  uint64    `json:"price"`
 }
 
 type ProductRatingByUser struct {

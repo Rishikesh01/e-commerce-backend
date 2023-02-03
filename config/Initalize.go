@@ -57,12 +57,14 @@ func start(router *gin.Engine) {
 	router.POST("/seller/register", registrationController.SellerSignup)
 	//user login endpoint
 	router.POST("/login", authController.Login)
-	//search endpoint
+	//Image endpoint
 	router.Static("/image", "./image")
+	//Search endpoint
 	router.GET("/search", prodController.SearchForProduct)
 	//add New Product Endpoint
-	sellerGroup.POST("/seller/product/image", prodController.AddNewProductPicture)
 	sellerGroup.POST("/seller/product", prodController.AddNewProduct)
+	//add Seller to existing product
+	sellerGroup.POST("/seller/existing/product", prodController.AddToExistingProduct)
 	//billing endpoint
 	sGroup.POST("/user/bill", billingController.CreateBill)
 

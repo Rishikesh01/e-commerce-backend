@@ -30,7 +30,7 @@ func Init() *gorm.DB {
 		&model.ProductRating{},
 		&model.TrackRating{},
 	); err != nil {
-		log.Println("error:", err)
+		log.Fatalln("error:", err)
 	}
 	return _db
 }

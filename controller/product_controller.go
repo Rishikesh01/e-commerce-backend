@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"fmt"
+	"encoding/json"
 	"github.com/Rishikesh01/amazon-clone-backend/dto"
 	"github.com/Rishikesh01/amazon-clone-backend/services"
 	"github.com/gin-gonic/gin"
@@ -51,16 +51,18 @@ func (p *ProductController) SearchForProduct(ctx *gin.Context) {
 	ctx.JSON(200, products)
 }
 
-func (p *ProductController) AddNewProductPicture(ctx *gin.Context) {
+// adds product
+func (p *ProductController) AddNewProduct(ctx *gin.Context) {
+	var prod dto.AddProduct
 	file, err := ctx.FormFile("file")
 	if err != nil {
 		ctx.JSON(400, err)
 		return
 	}
+	data := ctx.PostForm("data")
 
-	//dir, err := os.Getwd()
-	//dir, err := os.UserHomeDir()
-	if err != nil {
+	if err := json.Unmarshal([]byte(data), &prod); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 		return
 	}
 	fileName := "image/" + strings.TrimSuffix(file.Filename, ".") + uuid.New().String() + ".jpg"
@@ -69,6 +71,7 @@ func (p *ProductController) AddNewProductPicture(ctx *gin.Context) {
 		ctx.JSON(500, err)
 		return
 	}
+
 	const BEARER_SCHEMA = "Bearer"
 	authHeader := ctx.GetHeader("Authorization")
 	tokenString := authHeader[len(BEARER_SCHEMA)+1:]
@@ -77,31 +80,30 @@ func (p *ProductController) AddNewProductPicture(ctx *gin.Context) {
 		ctx.JSON(500, err)
 		return
 	}
-	ID, err := p.sellerService.AddNewProductImage(fileName, id)
-
-	ctx.JSON(http.StatusOK, fmt.Sprintf("ID:%s", ID.String()))
-}
-
-// adds product
-func (p *ProductController) AddNewProduct(ctx *gin.Context) {
-	var prod dto.Product
-	if err := ctx.ShouldBindJSON(&prod); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
-		return
-	}
-	const BEARER_SCHEMA = "Bearer"
-	authHeader := ctx.GetHeader("Authorization")
-	tokenString := authHeader[len(BEARER_SCHEMA)+1:]
-	id, _, _, err := services.GetSellerClaims(tokenString)
-	if err != nil {
-		ctx.JSON(500, err)
-		return
-	}
+	prod.Img = fileName
 	err = p.sellerService.AddNewProduct(prod, id)
 	if err != nil {
 		ctx.JSON(400, err)
 		return
 	}
+}
+
+func (p *ProductController) AddToExistingProduct(ctx *gin.Context) {
+	var product dto.AddSellerToProduct
+	if err := ctx.ShouldBindJSON(&product); err != nil {
+		ctx.JSON(400, err)
+		return
+	}
+	const BEARER_SCHEMA = "Bearer"
+	authHeader := ctx.GetHeader("Authorization")
+	tokenString := authHeader[len(BEARER_SCHEMA)+1:]
+	id, _, _, err := services.GetSellerClaims(tokenString)
+
+	if err = p.sellerService.AddSellerToExistingProduct(product, id); err != nil {
+		return
+	}
+
+	ctx.Status(200)
 }
 
 func (p *ProductController) RateProduct(ctx *gin.Context) {

@@ -12,6 +12,8 @@ type ProductRepo interface {
 	FindByLikeName(name string) ([]model.Product, error)
 	FindByID(id uuid.UUID) (*model.Product, error)
 	FindAll() ([]model.Product, error)
+	FindAllLimitRelations() ([]model.Product, error)
+	FindByIDLimitRelations(id uuid.UUID) (*model.Product, error)
 }
 
 type productRepo struct {
@@ -49,6 +51,19 @@ func (p *productRepo) FindAll() ([]model.Product, error) {
 	return products, nil
 }
 
+func (p *productRepo) FindAllLimitRelations() ([]model.Product, error) {
+	var products []model.Product
+
+	if err := p.db.Debug().Model(&model.Product{}).
+		Preload("ProductSeller", func(db *gorm.DB) *gorm.DB {
+			return db.Limit(3)
+		}).
+		Preload("ProductRating").Find(&products).Error; err != nil {
+		return nil, err
+	}
+	return products, nil
+}
+
 func (p *productRepo) FindByLikeName(name string) ([]model.Product, error) {
 	var products []model.Product
 	if err := p.db.Where("name = ?", name).Find(&products).Error; err != nil {
@@ -63,6 +78,15 @@ func (p *productRepo) FindByLikeName(name string) ([]model.Product, error) {
 func (p *productRepo) FindByID(id uuid.UUID) (*model.Product, error) {
 	var product model.Product
 	if err := p.db.Model(&model.Product{}).Preload("ProductSeller").Preload("ProductRating").Where("id=?", id).First(&product).Error; err != nil {
+		return nil, err
+	}
+	return &product, nil
+}
+
+func (p *productRepo) FindByIDLimitRelations(id uuid.UUID) (*model.Product, error) {
+	var product model.Product
+
+	if err := p.db.Model(&model.Product{}).Raw("select * from products pd join( select * from product_sellers ps limit 3) as p on pd.id = p.product_id where id =?", id).First(&product).Error; err != nil {
 		return nil, err
 	}
 	return &product, nil

@@ -11,8 +11,8 @@ import (
 
 type SellerService interface {
 	RegisterSeller(registration dto.SellerSignup) error
-	AddNewProduct(product dto.Product, sellerID uuid.UUID) error
-	AddNewProductImage(ImagePath string, sellerID uuid.UUID) (uuid.UUID, error)
+	AddNewProduct(product dto.AddProduct, sellerID uuid.UUID) error
+	AddSellerToExistingProduct(product dto.AddSellerToProduct, sellerID uuid.UUID) error
 	UpdateProduct(product model.Product) error
 }
 
@@ -41,36 +41,38 @@ func (u *sellerService) RegisterSeller(registration dto.SellerSignup) error {
 	return nil
 }
 
-func (p *sellerService) AddNewProductImage(ImagePath string, sellerID uuid.UUID) (uuid.UUID, error) {
-	mProduct := &model.Product{PicturePath: ImagePath}
-	mProduct.ProductSeller = append(mProduct.ProductSeller, model.ProductSeller{SellerID: sellerID})
+func (p *sellerService) AddNewProduct(product dto.AddProduct, sellerID uuid.UUID) error {
+
+	mProduct := &model.Product{}
+	mProduct.Name = product.Name
+	mProduct.PicturePath = product.Img
+	mProduct.Description = product.Description
+	mProduct.ProductSeller = []model.ProductSeller{}
+	mProduct.ProductSeller = append(mProduct.ProductSeller, model.ProductSeller{
+		SellerID: sellerID,
+		Price:    product.Price,
+	})
 
 	if err := p.productRepo.Save(mProduct); err != nil {
-		return uuid.UUID{}, err
+		return err
 	}
 
-	return mProduct.ID, nil
+	return nil
 }
 
-func (p *sellerService) AddNewProduct(product dto.Product, sellerID uuid.UUID) error {
-	seller, err := p.productSellerRepo.FindByCompositeID(product.ID, sellerID)
+func (p *sellerService) AddSellerToExistingProduct(product dto.AddSellerToProduct, sellerID uuid.UUID) error {
 	mProduct, err := p.productRepo.FindByID(product.ID)
 	if err != nil {
 		return err
 	}
-	mProduct.Name = product.Name
-	mProduct.Description = product.Description
-	mProduct.ProductSeller = []model.ProductSeller{}
-	mProduct.ProductSeller = append(mProduct.ProductSeller, model.ProductSeller{
-		SellerID:  seller.SellerID,
-		ProductID: seller.ProductID,
+
+	if err := p.productSellerRepo.Save(&model.ProductSeller{
+		ProductID: mProduct.ID,
+		SellerID:  sellerID,
 		Price:     product.Price,
-	})
-	err = p.productRepo.Save(mProduct)
-	if err != nil {
+	}); err != nil {
 		return err
 	}
-
 	return nil
 }
 
