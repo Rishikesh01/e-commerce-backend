@@ -20,12 +20,28 @@ func NewRegistartionController(service services.UserService, sellerService servi
 func (r *RegistrationController) Signup(ctx *gin.Context) {
 	var cred dto.Registration
 	if err := ctx.ShouldBindJSON(&cred); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	if err := cred.IsAnyFieldEmpty(); err != nil {
+		ctx.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := cred.IsPasswordEqual(); err != nil {
+		ctx.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if err := cred.IsValidEmail(); err != nil {
+		ctx.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
 	err := r.service.Register(cred)
 	if err != nil {
-		ctx.JSON(400, err)
+		ctx.JSON(400, gin.H{"error": err.Error()})
+		return
 	}
 	ctx.Status(200)
 }
