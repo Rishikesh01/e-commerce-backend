@@ -40,7 +40,7 @@ func start(router *gin.Engine) {
 	homeService := services.NewHomePageService(productRepo)
 
 	authController := controller.NewJWTAuthController(authService)
-	registrationController := controller.NewRegistartionController(userService, sellerService)
+	registrationController := controller.NewRegistrationController(userService, sellerService)
 	prodController := controller.NewProductController(productService, sellerService, userService)
 	billingController := controller.NewBillingController(billingService)
 	homeController := controller.NewHomeController(homeService)

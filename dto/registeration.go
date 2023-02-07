@@ -12,19 +12,35 @@ type Registration struct {
 	ConfirmPassword string `json:"confirm_password"`
 }
 
-func (r *Registration) IsAnyFieldEmpty() error {
+func (r *Registration) Error() error {
+	if err := r.emailFormatErr(); err != nil {
+		return err
+	}
+
+	if err := r.passwordErr(); err != nil {
+		return err
+	}
+
+	if err := r.emptyFieldErr(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Registration) emptyFieldErr() error {
 	if r.Name == "" || r.Email == "" || r.Password == "" || r.ConfirmPassword == "" {
 		return errors.New("field is/are empty")
 	}
 	return nil
 }
-func (r *Registration) IsValidEmail() error {
+func (r *Registration) emailFormatErr() error {
 	if _, err := mail.ParseAddress(r.Email); err != nil {
 		return err
 	}
 	return nil
 }
-func (r *Registration) IsPasswordEqual() error {
+func (r *Registration) passwordErr() error {
 	if r.Password != r.ConfirmPassword {
 		return errors.New("passwords don't match")
 	}

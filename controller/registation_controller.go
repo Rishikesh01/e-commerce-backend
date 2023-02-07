@@ -13,27 +13,19 @@ type RegistrationController struct {
 	sellerService services.SellerService
 }
 
-func NewRegistartionController(service services.UserService, sellerService services.SellerService) *RegistrationController {
+func NewRegistrationController(service services.UserService, sellerService services.SellerService) *RegistrationController {
 	return &RegistrationController{service: service, sellerService: sellerService}
 }
 
 func (r *RegistrationController) Signup(ctx *gin.Context) {
 	var cred dto.Registration
+
 	if err := ctx.ShouldBindJSON(&cred); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := cred.IsAnyFieldEmpty(); err != nil {
-		ctx.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-
-	if err := cred.IsPasswordEqual(); err != nil {
-		ctx.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-	if err := cred.IsValidEmail(); err != nil {
+	if err := cred.Error(); err != nil {
 		ctx.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
@@ -52,9 +44,14 @@ func (r *RegistrationController) SellerSignup(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
+	if err := cred.Error(); err != nil {
+		ctx.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
 	err := r.sellerService.RegisterSeller(cred)
 	if err != nil {
-		ctx.JSON(400, err)
+		ctx.JSON(400, gin.H{"error": err.Error()})
 	}
 	ctx.Status(200)
 }

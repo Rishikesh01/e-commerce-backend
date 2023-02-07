@@ -13,19 +13,35 @@ type SellerSignup struct {
 	ConfirmPassword string `json:"confirm_password"`
 }
 
-func (r *SellerSignup) IsAnyFieldEmpty() error {
+func (r *SellerSignup) Error() error {
+	if err := r.emptyFieldErr(); err != nil {
+		return err
+	}
+
+	if err := r.emailFormatErr(); err != nil {
+		return err
+	}
+
+	if err := r.passwordErr(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *SellerSignup) emptyFieldErr() error {
 	if r.Name == "" || r.BusinessName == "" || r.Email == "" || r.Password == "" || r.ConfirmPassword == "" {
 		return errors.New("field is/are empty")
 	}
 	return nil
 }
-func (r *SellerSignup) IsValidEmail() error {
+func (r *SellerSignup) emailFormatErr() error {
 	if _, err := mail.ParseAddress(r.Email); err != nil {
 		return err
 	}
 	return nil
 }
-func (r *SellerSignup) IsPasswordEqual() error {
+func (r *SellerSignup) passwordErr() error {
 	if r.Password != r.ConfirmPassword {
 		return errors.New("passwords don't match")
 	}

@@ -100,6 +100,7 @@ func (p *ProductController) AddToExistingProduct(ctx *gin.Context) {
 	id, _, _, err := services.GetSellerClaims(tokenString)
 
 	if err = p.sellerService.AddSellerToExistingProduct(product, id); err != nil {
+		ctx.JSON(500, err.Error())
 		return
 	}
 
@@ -109,7 +110,7 @@ func (p *ProductController) AddToExistingProduct(ctx *gin.Context) {
 func (p *ProductController) RateProduct(ctx *gin.Context) {
 	var rating dto.ProductRatingByUser
 	if err := ctx.ShouldBindJSON(&rating); err != nil {
-		ctx.JSON(400, err)
+		ctx.JSON(400, err.Error())
 		return
 	}
 	const BEARER_SCHEMA = "Bearer"
@@ -117,13 +118,13 @@ func (p *ProductController) RateProduct(ctx *gin.Context) {
 	tokenString := authHeader[len(BEARER_SCHEMA)+1:]
 	id, _, err := services.GetClaims(tokenString)
 	if err != nil {
-		ctx.JSON(500, err)
+		ctx.JSON(500, err.Error())
 		return
 	}
 	rating.UserID = id
 	err = p.userService.RateProduct(rating)
 	if err != nil {
-		ctx.JSON(400, err)
+		ctx.JSON(400, err.Error())
 		return
 	}
 
